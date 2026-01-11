@@ -24,7 +24,7 @@ trend_ema_period = input.int(200, "Trend EMA Period", minval=1, maxval=500, tool
 touch_buffer_pct = input.float(0.3, "EMA Touch Buffer %", minval=0.0, maxval=5.0, step=0.1, tooltip="Buffer zone for EMA touch detection as percentage")
 
 // Trigger geometry parameters
-wick_to_gap_ratio = input.float(1.5, "Wick to Gap Ratio", minval=0.0, step=0.1, tooltip="Required ratio of low wick length to EMA gap for trigger candle")
+wick_to_gap_ratio = input.float(0.75, "Wick to Gap Ratio", minval=0.0, step=0.1, tooltip="Required ratio of low wick length to EMA gap for trigger candle")
 
 // =============================================================================
 // PARAMETER VALIDATION
