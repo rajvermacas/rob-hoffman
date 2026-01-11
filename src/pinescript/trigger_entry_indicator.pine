@@ -145,14 +145,14 @@ if valid_periods
 // =============================================================================
 
 // Plot EMA lines
-plot(ema_fast, "Fast EMA", color=color.new(#2962FF, 0), linewidth=2)
-plot(ema_slow, "Slow EMA", color=color.new(#FF6D00, 0), linewidth=2)
+plot(ema_fast, "Fast EMA", color=color.new(color.yellow, 0), linewidth=1)
+plot(ema_slow, "Slow EMA", color=color.new(color.green, 0), linewidth=1)
 
-// Plot trigger marker (green triangle below bar)
-plotshape(trigger_signal, "Trigger", style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small, text="T")
+// Plot trigger marker (amber triangle below bar)
+plotshape(trigger_signal, "Trigger", style=shape.triangleup, location=location.belowbar, color=color.rgb(255, 191, 0), size=size.small)
 
-// Plot entry marker (lime triangle above bar)
-plotshape(entry_signal, "Entry", style=shape.triangleup, location=location.abovebar, color=color.lime, size=size.normal, text="E")
+// Plot entry marker (green triangle below bar)
+plotshape(entry_signal, "Entry", style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small)
 
 // =============================================================================
 // DEBUG / INFO DISPLAY (data window only - no chart rendering)
