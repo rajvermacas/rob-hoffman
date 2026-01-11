@@ -62,6 +62,7 @@ var line trigger_line = na
 
 bool entry_signal = false
 bool trigger_signal = false
+bool touch_zone_signal = false
 
 // =============================================================================
 // CORE LOGIC
@@ -90,6 +91,7 @@ if valid_periods
             if not ema_touched
                 if low <= adjusted_ema_for_touch
                     ema_touched := true
+                    touch_zone_signal := true
                     // Update line color to green (touch confirmed)
                     if not na(trigger_line)
                         line.set_color(trigger_line, color.green)
@@ -98,7 +100,7 @@ if valid_periods
             // STEP 4: Check entry conditions
             // Entry signal fires when all conditions are met
             // =================================================================
-            if ema_touched and close > trigger_level and ema_fast > ema_slow and bar_index > trigger_bar_index
+            if ema_touched and close > trigger_level and ema_fast > ema_slow and bar_index > trigger_bar_index and (close > open)
                 entry_signal := true
                 trigger_active := false
                 ema_touched := false
@@ -120,7 +122,7 @@ if valid_periods
     // - Close above both EMAs
     // - Low above both EMAs
     // - Low wick shorter than gap to higher EMA
-    is_valid_trigger = (close > ema_fast) and (close > ema_slow) and (low > ema_fast) and (low > ema_slow) and (gap_to_ema > 0) and (low_wick_length < gap_to_ema)
+    is_valid_trigger = (close > open) and (close > ema_fast) and (close > ema_slow) and (low > ema_fast) and (low > ema_slow) and (gap_to_ema > 0) and (low_wick_length < gap_to_ema)
 
     if is_valid_trigger
         new_trigger_level = high
@@ -153,6 +155,9 @@ plotshape(trigger_signal, "Trigger", style=shape.triangleup, location=location.b
 
 // Plot entry marker (green triangle below bar)
 plotshape(entry_signal, "Entry", style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small)
+
+// Plot touch zone marker (orange triangle below bar, tiny size)
+plotshape(touch_zone_signal, "Touch Zone", style=shape.triangleup, location=location.belowbar, color=color.blue, size=size.tiny)
 
 // =============================================================================
 // DEBUG / INFO DISPLAY (data window only - no chart rendering)
