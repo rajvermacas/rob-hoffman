@@ -1,0 +1,165 @@
+// =============================================================================
+// EMA Trigger-Entry Signal System
+// Version: 1.0
+//
+// This indicator identifies high-probability long entry signals based on price
+// action relative to dual EMA structure. Uses a two-phase approach:
+// 1. Trigger Phase: Identifies candles with specific geometry relative to EMAs
+// 2. Entry Phase: Confirms breakout above trigger level after EMA retest
+// =============================================================================
+
+//@version=5
+indicator("EMA Trigger-Entry Signal", overlay=true, max_lines_count=500)
+
+// =============================================================================
+// INPUT PARAMETERS
+// =============================================================================
+
+// EMA periods
+fast_ema_period = input.int(10, "Fast EMA Period", minval=1, maxval=200, tooltip="Period for the fast EMA")
+slow_ema_period = input.int(20, "Slow EMA Period", minval=1, maxval=200, tooltip="Period for the slow EMA")
+
+// Touch buffer - percentage-based for timeframe independence
+touch_buffer_pct = input.float(0.3, "EMA Touch Buffer %", minval=0.0, maxval=5.0, step=0.1, tooltip="Buffer zone for EMA touch detection as percentage")
+
+// =============================================================================
+// PARAMETER VALIDATION
+// =============================================================================
+
+// Ensure fast EMA period is less than slow EMA period
+valid_periods = fast_ema_period < slow_ema_period
+
+// Display warning if invalid configuration
+plotchar(not valid_periods, "Invalid Config", "!", location.abovebar, color.red, size=size.small)
+
+// =============================================================================
+// INDICATOR CALCULATIONS
+// =============================================================================
+
+// Calculate EMAs
+ema_fast = ta.ema(close, fast_ema_period)
+ema_slow = ta.ema(close, slow_ema_period)
+
+// Adjusted EMA for touch detection (with buffer zone)
+adjusted_ema_for_touch = ema_fast * (1 + touch_buffer_pct / 100)
+
+// Higher EMA value (for gap calculation in trigger detection)
+higher_ema = math.max(ema_fast, ema_slow)
+
+// =============================================================================
+// STATE VARIABLES (persist across bars)
+// =============================================================================
+
+var bool trigger_active = false
+var float trigger_level = 0.0
+var int trigger_bar_index = 0
+var bool ema_touched = false
+var line trigger_line = na
+
+// =============================================================================
+// SIGNAL FLAGS (reset each bar)
+// =============================================================================
+
+bool entry_signal = false
+bool trigger_signal = false
+
+// =============================================================================
+// CORE LOGIC
+// =============================================================================
+
+// Only process if configuration is valid
+if valid_periods
+    // =========================================================================
+    // STEP 2: Check invalidation (if trigger is active)
+    // Trigger is invalidated when price closes below slow EMA
+    // =========================================================================
+    if trigger_active
+        if close < ema_slow
+            // INVALIDATION: Candle closed below slow EMA
+            trigger_active := false
+            ema_touched := false
+            // Remove trigger level line
+            if not na(trigger_line)
+                line.delete(trigger_line)
+                trigger_line := na
+        else
+            // =================================================================
+            // STEP 3: Check EMA touch (if trigger active and not yet touched)
+            // Price "touches" EMA when low is within buffer zone
+            // =================================================================
+            if not ema_touched
+                if low <= adjusted_ema_for_touch
+                    ema_touched := true
+                    // Update line color to green (touch confirmed)
+                    if not na(trigger_line)
+                        line.set_color(trigger_line, color.green)
+
+            // =================================================================
+            // STEP 4: Check entry conditions
+            // Entry signal fires when all conditions are met
+            // =================================================================
+            if ema_touched and close > trigger_level and ema_fast > ema_slow and bar_index > trigger_bar_index
+                entry_signal := true
+                trigger_active := false
+                ema_touched := false
+                // Remove trigger level line after entry
+                if not na(trigger_line)
+                    line.delete(trigger_line)
+                    trigger_line := na
+
+    // =========================================================================
+    // STEP 5: Check for new trigger candle
+    // Runs after entry check - allows entry candle to become new trigger
+    // =========================================================================
+
+    // Calculate trigger geometry values
+    low_wick_length = close - low
+    gap_to_ema = low - higher_ema
+
+    // Trigger candle conditions:
+    // - Close above both EMAs
+    // - Low above both EMAs
+    // - Low wick shorter than gap to higher EMA
+    is_valid_trigger = (close > ema_fast) and (close > ema_slow) and (low > ema_fast) and (low > ema_slow) and (gap_to_ema > 0) and (low_wick_length < gap_to_ema)
+
+    if is_valid_trigger
+        new_trigger_level = high
+
+        // Only update if no active trigger OR new level is higher
+        if (not trigger_active) or (new_trigger_level > trigger_level)
+            trigger_level := new_trigger_level
+            trigger_active := true
+            trigger_bar_index := bar_index
+            ema_touched := false
+            trigger_signal := true
+
+            // Remove old trigger line before creating new one
+            if not na(trigger_line)
+                line.delete(trigger_line)
+
+            // Create new trigger level line (yellow = waiting for touch)
+            trigger_line := line.new(bar_index, trigger_level, bar_index + 1, trigger_level, color=color.yellow, style=line.style_dashed, width=1, extend=extend.right)
+
+// =============================================================================
+// STEP 6: VISUAL OUTPUT
+// =============================================================================
+
+// Plot EMA lines
+plot(ema_fast, "Fast EMA", color=color.new(#2962FF, 0), linewidth=2)
+plot(ema_slow, "Slow EMA", color=color.new(#FF6D00, 0), linewidth=2)
+
+// Plot trigger marker (green triangle below bar)
+plotshape(trigger_signal, "Trigger", style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small, text="T")
+
+// Plot entry marker (lime triangle above bar)
+plotshape(entry_signal, "Entry", style=shape.triangleup, location=location.abovebar, color=color.lime, size=size.normal, text="E")
+
+// =============================================================================
+// DEBUG / INFO DISPLAY (data window only - no chart rendering)
+// =============================================================================
+
+// Show trigger state in data window only (no visual on chart)
+// Plots removed to prevent scaling issues caused by 0/1 values mixing with price data
+// plot(trigger_active ? 1 : 0, "Trigger Active", display=display.data_window)
+// plot(ema_touched ? 1 : 0, "EMA Touched", display=display.data_window)
+plot(trigger_active ? trigger_level : na, "Trigger Level", display=display.data_window)
