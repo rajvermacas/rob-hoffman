@@ -41,8 +41,9 @@ These test scenarios are designed for manual validation in TradingView. Apply th
 2. Verify line colors and positions
 
 **Expected Results:**
-- [ ] Blue line (Fast EMA 10) plots correctly
-- [ ] Orange/Red line (Slow EMA 20) plots correctly
+- [ ] Yellow line (Fast EMA 10) plots correctly
+- [ ] Green line (Slow EMA 20) plots correctly
+- [ ] Gray line (Trend EMA 200) plots correctly
 - [ ] Fast EMA responds quicker to price changes
 - [ ] Lines are continuous with no gaps
 
@@ -60,7 +61,7 @@ These test scenarios are designed for manual validation in TradingView. Apply th
 2. Check for trigger marker
 
 **Expected Results:**
-- [ ] Green "T" triangle appears below the trigger candle
+- [ ] Amber triangle appears below the trigger candle
 - [ ] Yellow dashed horizontal line appears at the high of trigger candle
 - [ ] Line extends to the right
 
@@ -75,7 +76,7 @@ These test scenarios are designed for manual validation in TradingView. Apply th
             │  (gap > wick)
   ══════════│  ← EMA
 
-     ▲ (Green T marker below bar)
+      ▲ (Amber marker below bar)
 ```
 
 ---
@@ -134,7 +135,7 @@ These test scenarios are designed for manual validation in TradingView. Apply th
    - Price closes above trigger level
 
 **Expected Results:**
-- [ ] Lime "E" triangle appears ABOVE the entry candle
+- [ ] Green triangle appears below the entry candle
 - [ ] Trigger level line is removed
 - [ ] State resets (no active trigger)
 
@@ -179,7 +180,7 @@ These test scenarios are designed for manual validation in TradingView. Apply th
 2. Find another valid trigger candle B with higher high
 
 **Expected Results:**
-- [ ] New green "T" marker appears below candle B
+- [ ] New amber marker appears below candle B
 - [ ] Trigger level line moves UP to new high
 - [ ] Previous trigger level is replaced
 - [ ] ema_touched flag is RESET to false
@@ -210,8 +211,8 @@ These test scenarios are designed for manual validation in TradingView. Apply th
 2. Check if entry candle also satisfies trigger geometry conditions
 
 **Expected Results:**
-- [ ] Entry signal fires (lime E marker)
-- [ ] If entry candle meets trigger criteria, new trigger marker also appears
+- [ ] Entry signal fires (green marker)
+- [ ] If entry candle meets trigger criteria, new trigger marker (amber) also appears
 - [ ] New trigger level line set at entry candle's high
 
 ---
@@ -224,6 +225,7 @@ These test scenarios are designed for manual validation in TradingView. Apply th
 1. Open indicator settings
 2. Set Fast EMA Period = 20
 3. Set Slow EMA Period = 10 (or equal values)
+4. Set Trend EMA Period = 5 (invalid sequence)
 
 **Expected Results:**
 - [ ] Warning indicator "!" appears on chart
@@ -256,9 +258,24 @@ These test scenarios are designed for manual validation in TradingView. Apply th
 3. Hover over various bars
 
 **Expected Results:**
-- [ ] "Trigger Active" shows true/false appropriately
-- [ ] "EMA Touched" shows true/false appropriately
 - [ ] "Trigger Level" shows current level when trigger active
+
+---
+
+### TC-016: EMA Trend Filter (200 EMA)
+
+**Objective:** Verify trigger candles are only identified when price is in an uptrend (10 & 20 EMA > 200 EMA)
+
+**Steps:**
+1. Find a candle that meets all geometry requirements but where:
+   - Fast EMA (10) is BELOW Trend EMA (200) OR
+   - Slow EMA (20) is BELOW Trend EMA (200)
+2. Check for trigger marker
+
+**Expected Results:**
+- [ ] NO trigger marker appears
+- [ ] NO trigger level line appears
+- [ ] Trigger ONLY appears when both 10 and 20 EMAs are above 200 EMA
 
 ---
 

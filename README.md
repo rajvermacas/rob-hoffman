@@ -34,6 +34,7 @@ This indicator uses a two-phase approach:
 |-----------|------|---------|-------|-------------|
 | Fast EMA Period | int | 10 | 1-200 | Period for the fast EMA |
 | Slow EMA Period | int | 20 | 1-200 | Period for the slow EMA |
+| Trend EMA Period | int | 200 | 1-500 | Period for the trend EMA |
 | Touch Buffer % | float | 0.3 | 0.0-5.0 | Buffer zone for EMA touch detection |
 
 ## Signal Logic
@@ -58,6 +59,7 @@ A candle qualifies as a trigger when ALL conditions are met:
   - close > fast_ema AND close > slow_ema
   - low > fast_ema AND low > slow_ema
   - A < B (low wick shorter than gap to higher EMA)
+  - **NEW**: fast_ema > trend_ema AND slow_ema > trend_ema (EMA Trend Confirmation)
 ```
 
 ### EMA Touch Detection
@@ -84,6 +86,7 @@ An entry signal fires when:
 |---------|------|-------|-------------|
 | Fast EMA | Line | Yellow | 10-period EMA |
 | Slow EMA | Line | Green | 20-period EMA |
+| Trend EMA | Line | Gray | 200-period EMA |
 | Trigger Marker | Triangle | Amber | Below bar, marks trigger candle |
 | Entry Marker | Triangle | Green | Above bar, marks entry signal |
 | Trigger Level | Dashed Line | Yellow/Green | Horizontal at trigger high |
@@ -120,6 +123,7 @@ An entry signal fires when:
 | New trigger with lower/equal high | Ignored, keeps previous trigger |
 | Candle closes below slow EMA | Invalidates trigger, resets all state |
 | Fast EMA crosses below slow EMA | Entry blocked until realigned |
+| EMAs below 200 EMA | No new triggers allowed |
 
 ## Project Structure
 
