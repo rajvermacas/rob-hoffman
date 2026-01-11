@@ -46,6 +46,16 @@ adjusted_ema_for_touch = ema_fast * (1 + touch_buffer_pct / 100)
 // Higher EMA value (for gap calculation in trigger detection)
 higher_ema = math.max(ema_fast, ema_slow)
 
+// Calculate trigger geometry values
+low_wick_length = close - low
+gap_to_ema = low - higher_ema
+
+// Trigger candle conditions:
+// - Close above both EMAs
+// - Low above both EMAs
+// - Low wick shorter than gap to higher EMA
+is_valid_trigger = (close > ema_fast) and (close > ema_slow) and (low > ema_fast) and (low > ema_slow) and (gap_to_ema > 0) and (low_wick_length < gap_to_ema)
+
 // =============================================================================
 // STATE VARIABLES (persist across bars)
 // =============================================================================
@@ -110,19 +120,33 @@ if valid_periods
                     trigger_line := na
 
     // =========================================================================
+    // STEP 4.5: Check for high violation
+    // If price goes above trigger level but is not a valid entry or new trigger
+    // =========================================================================
+    if trigger_active and high > trigger_level
+        // If it was an entry, trigger_active would be false by now.
+        // So this runs only if NO ENTRY occurred.
+        // Check if it's a valid new trigger (if so, we let Step 5 handle it)
+        if not is_valid_trigger
+            // VIOLATION: High broke trigger level but not a valid trigger candle
+            trigger_active := false
+            ema_touched := false
+            if not na(trigger_line)
+                line.delete(trigger_line)
+                trigger_line := na
+
+    // =========================================================================
     // STEP 5: Check for new trigger candle
     // Runs after entry check - allows entry candle to become new trigger
     // =========================================================================
 
     // Calculate trigger geometry values
-    low_wick_length = close - low
-    gap_to_ema = low - higher_ema
+    // Moved to top of script for reuse in validation steps
+    // low_wick_length = close - low
+    // gap_to_ema = low - higher_ema
 
     // Trigger candle conditions:
-    // - Close above both EMAs
-    // - Low above both EMAs
-    // - Low wick shorter than gap to higher EMA
-    is_valid_trigger = (close > open) and (close > ema_fast) and (close > ema_slow) and (low > ema_fast) and (low > ema_slow) and (gap_to_ema > 0) and (low_wick_length < gap_to_ema)
+    // is_valid_trigger calculated at top of script
 
     if is_valid_trigger
         new_trigger_level = high

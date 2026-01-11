@@ -82,10 +82,10 @@ An entry signal fires when:
 
 | Element | Type | Color | Description |
 |---------|------|-------|-------------|
-| Fast EMA | Line | Blue (#2962FF) | 10-period EMA |
-| Slow EMA | Line | Orange (#FF6D00) | 20-period EMA |
-| Trigger Marker | Triangle | Green | Below bar, marks trigger candle |
-| Entry Marker | Triangle | Lime | Above bar, marks entry signal |
+| Fast EMA | Line | Yellow | 10-period EMA |
+| Slow EMA | Line | Green | 20-period EMA |
+| Trigger Marker | Triangle | Amber | Below bar, marks trigger candle |
+| Entry Marker | Triangle | Green | Above bar, marks entry signal |
 | Trigger Level | Dashed Line | Yellow/Green | Horizontal at trigger high |
 
 ### Trigger Level Line Colors
