@@ -1,6 +1,6 @@
 // =============================================================================
 // EMA Trigger-Entry Signal System
-// Version: 1.2
+// Version: 1.3
 //
 // This indicator identifies high-probability long entry signals based on price
 // action relative to dual EMA structure. Uses a two-phase approach:
