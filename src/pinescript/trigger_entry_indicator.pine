@@ -1,6 +1,6 @@
 // =============================================================================
 // EMA Trigger-Entry Signal System
-// Version: 1.0
+// Version: 1.2
 //
 // This indicator identifies high-probability long entry signals based on price
 // action relative to dual EMA structure. Uses a two-phase approach:
@@ -22,6 +22,9 @@ trend_ema_period = input.int(200, "Trend EMA Period", minval=1, maxval=500, tool
 
 // Touch buffer - percentage-based for timeframe independence
 touch_buffer_pct = input.float(0.3, "EMA Touch Buffer %", minval=0.0, maxval=5.0, step=0.1, tooltip="Buffer zone for EMA touch detection as percentage")
+
+// Trigger geometry parameters
+wick_to_gap_ratio = input.float(1.5, "Wick to Gap Ratio", minval=0.0, step=0.1, tooltip="Required ratio of low wick length to EMA gap for trigger candle")
 
 // =============================================================================
 // PARAMETER VALIDATION
@@ -49,15 +52,15 @@ adjusted_ema_for_touch = ema_fast * (1 + touch_buffer_pct / 100)
 higher_ema = math.max(ema_fast, ema_slow)
 
 // Calculate trigger geometry values
-low_wick_length = close - low
+low_wick_length = math.min(open, close) - low
 gap_to_ema = low - higher_ema
 
 // Trigger candle conditions:
 // - Close above both EMAs
 // - Low above both EMAs
-// - Low wick shorter than gap to higher EMA
-// - NEW: Fast and Slow EMAs MUST be above Trend EMA (200)
-is_valid_trigger = (close > ema_fast) and (close > ema_slow) and (low > ema_fast) and (low > ema_slow) and (gap_to_ema > 0) and (low_wick_length < gap_to_ema) and (ema_fast > ema_trend) and (ema_slow > ema_trend)
+// - Low wick shorter than gap to higher EMA (multiplied by ratio)
+// - Fast and Slow EMAs MUST be above Trend EMA (200)
+is_valid_trigger = (close > ema_fast) and (close > ema_slow) and (low > ema_fast) and (low > ema_slow) and (gap_to_ema > 0) and (low_wick_length < gap_to_ema * wick_to_gap_ratio) and (ema_fast > ema_trend) and (ema_slow > ema_trend)
 
 // =============================================================================
 // STATE VARIABLES (persist across bars)

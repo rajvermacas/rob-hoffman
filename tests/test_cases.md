@@ -49,15 +49,29 @@ These test scenarios are designed for manual validation in TradingView. Apply th
 
 ---
 
+### TC-017: Wick to Gap Ratio Parameter
+**Objective:** Verify Wick to Gap Ratio parameter affects trigger detection
+**Steps:**
+1. Find a candle where the lower wick is 1.2x the gap to EMA
+2. Verify trigger marker APPEARS with default 1.5 ratio (since 1.2 < 1.5)
+3. Change "Wick to Gap Ratio" input to 1.0
+4. Check for trigger marker
+**Expected Results:**
+- [ ] 1.5 ratio: Trigger marker APPEARS for 1.2x gap
+- [ ] 1.0 ratio: Trigger marker DISAPPEARS for 1.2x gap
+- [ ] User can adjust the "tightness" of the trigger geometry
+
+---
+
 ### TC-003: Basic Trigger Detection
 
-**Objective:** Verify trigger candles are correctly identified
+**Objective:** Verify trigger candles are correctly identified (New Geometry)
 
 **Steps:**
 1. Find a candle where:
    - Close is above both EMAs
    - Low is above both EMAs
-   - Lower wick is shorter than gap between low and higher EMA
+   - Lower wick is shorter than 1.5x the gap between low and higher EMA
 2. Check for trigger marker
 
 **Expected Results:**
@@ -71,24 +85,22 @@ These test scenarios are designed for manual validation in TradingView. Apply th
         │   │
         │   │  Close > both EMAs
         ┴───┤  Low > both EMAs
-            │  (short wick)
+            │  (short wick - A)
   ══════════│  ← EMA
-            │  (gap > wick)
+            │  (larger gap - B)
   ══════════│  ← EMA
 
       ▲ (Amber marker below bar)
+      COND: A < 1.5 * B
 ```
 
 ---
 
 ### TC-004: Invalid Trigger - Wick Too Long
-
 **Objective:** Verify candles with long lower wicks are NOT triggers
-
 **Steps:**
 1. Find a candle above both EMAs but with:
-   - Lower wick LONGER than gap to EMA
-
+   - Lower wick LONGER than 1.5x gap to EMA (e.g., wick is 2x gap)
 **Expected Results:**
 - [ ] NO trigger marker appears
 - [ ] NO trigger level line appears

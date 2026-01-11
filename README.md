@@ -36,6 +36,7 @@ This indicator uses a two-phase approach:
 | Slow EMA Period | int | 20 | 1-200 | Period for the slow EMA |
 | Trend EMA Period | int | 200 | 1-500 | Period for the trend EMA |
 | Touch Buffer % | float | 0.3 | 0.0-5.0 | Buffer zone for EMA touch detection |
+| Wick to Gap Ratio | float | 1.5 | 0.0+ | Minimum ratio (Low Wick / GAP) required |
 
 ## Signal Logic
 
@@ -58,7 +59,7 @@ A candle qualifies as a trigger when ALL conditions are met:
   CONDITIONS:
   - close > fast_ema AND close > slow_ema
   - low > fast_ema AND low > slow_ema
-  - A < B (low wick shorter than gap to higher EMA)
+  - A < 1.5 * B (low wick shorter than 1.5x the gap to higher EMA)
   - **NEW**: fast_ema > trend_ema AND slow_ema > trend_ema (EMA Trend Confirmation)
 ```
 
@@ -150,6 +151,8 @@ See `tests/test_cases.md` for comprehensive manual test scenarios to validate in
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-01-11 | Initial release |
+| 1.1 | 2026-01-11 | Updated trigger geometry: low wick must be > 1.5x gap to EMA (Incorrect) |
+| 1.2 | 2026-01-11 | Corrected trigger geometry: low wick must be < 1.5x gap to EMA |
 
 ## License
 
